@@ -1,10 +1,7 @@
 const CONSTANTS = require("./constants"),
-  configs = require("./configs");
+  configs = require("./configs"),
+  { getRandomColor } = require("./utils");
 const { DIRECTIONS } = CONSTANTS;
-
-const getRandomColor = () => 
-  Math.floor(Math.random() * 0xFFFFFF)
-
 
 class Snake {
   constructor(
@@ -25,7 +22,7 @@ class Snake {
     this.bodyLength = length;
     this.direction = direction;
     this.bodyColor = getRandomColor();
-    this.headColor = 0xFF0000;
+    this.headColor = 0xff0000;
     this.initBody();
     this.speed = speed;
     this.checkFood = checkFood;
@@ -68,7 +65,7 @@ class Snake {
       direction,
       startX,
       startY,
-      bodyColor 
+      bodyColor
     };
 
     this.socket.emit("setup_snake", snake_data);
@@ -91,8 +88,12 @@ class Snake {
           break;
       }
 
+      this.socket.emit("update_direction", {
+        id: this.socket.id,
+        direction: this.direction
+      });
       this.socket.broadcast.emit("update_direction", {
-        id: socket.id,
+        id:this. socket.id,
         direction: this.direction
       });
     });
