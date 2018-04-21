@@ -55,6 +55,7 @@ exports.setupRoom = (roomId, io, width, height, foodCount, speed) => {
       foods = removeFood(foods, this.x, this.y, gameMap);
       // remove food from server
       const newFood = generateFood(width, height, gameMap);
+      foods.push(newFood);
       nsp.emit("create_food", newFood);
     }
   }
