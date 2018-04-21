@@ -26,7 +26,7 @@ exports.setupRoom = (roomId, io, width, height, foodCount, speed) => {
   // Server state.
   const players = {};
   const gameMap = {};
-  let foods = generateFoods(foodCount, width, height, gameMap);
+  let foods = initFoods(foodCount, width, height, gameMap);
  
 
   function checkFood() {
