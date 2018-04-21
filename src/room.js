@@ -2,14 +2,21 @@ const Snake = require("./snake"),
   CONSTANTS = require("./constants"),
   configs = require("./configs");
 
+function removeFood(foods, x, y, map) {
+  map[x + "#" + y] = undefined;
+  return foods.filter(food => !(food.x === x && food.y === y));
+}
+
 function generateFood(width, height, map, type = 1) {
-  let x = Math.floor(Math.random() * width),
-      y = Math.floor(Math.random() * height);
+  let x = Math.floor(Math.random() * width - 1),
+      y = Math.floor(Math.random() * height - 1);
 
   while(map[x + "#" + y]) {
     x = Math.floor(Math.random() * width);
     y = Math.floor(Math.random() * height);
   }
+
+  map[x + "#" + y] = {type};
 
   return {x, y, type};
 }
@@ -17,7 +24,8 @@ function generateFood(width, height, map, type = 1) {
 function initFoods(count, width, height, map, type) {
   const f = [];
   while(count--) {
-    f.push(generateFood(width, height, map, type))
+    const newFood = generateFood(width, height, map, type);
+    f.push(newFood)
   }
   return f;
 }
@@ -30,28 +38,24 @@ exports.setupRoom = (roomId, io, width, height, foodCount, speed) => {
  
 
   function checkFood() {
-    const foodKey = this.x + "#" + this.y;
-    if (gameMap[foodKey]) {
+    if (gameMap[this.x + "#" + this.y]) {
+      const growData = {
+        id: this.socket.id,
+        body: this.body,
+        x: this.x,
+        y: this.y
+      }
+
       // notify the clients.
-      this.socket.emit("grow", {
-        id: this.socket.id,
-        body: this.body,
-        foodKey
-      });
-      this.socket.broadcast.emit("grow", {
-        id: this.socket.id,
-        body: this.body,
-        foodKey
-      });
+      this.socket.emit("grow", growData);
+      this.socket.broadcast.emit("grow", growData);
+
       // grow the server snake.
       this.grow(1);
+      foods = removeFood(foods, this.x, this.y, gameMap);
       // remove food from server
-      const { key } = gameMap[foodKey];
-      gameMap[foodKey] = undefined;
       const newFood = generateFood(width, height, gameMap);
-      foods = [...foods.slice(0, key), ...foods.slice(key + 1), newFood];
-
-      nsp.socket.emit("create_food", newFood);
+      nsp.emit("create_food", newFood);
     }
   }
 
